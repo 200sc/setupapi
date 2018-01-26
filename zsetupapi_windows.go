@@ -5,6 +5,8 @@ package setupapi
 import (
 	"syscall"
 	"unsafe"
+
+	"github.com/oakmound/w32"
 )
 
 var _ unsafe.Pointer
@@ -18,7 +20,7 @@ var (
 	procSetupDiGetDeviceInstanceIdW  = modsetupapi.NewProc("SetupDiGetDeviceInstanceIdW")
 )
 
-func setupDiClassGuidsFromNameEx(ClassName string, guid *Guid, size uint32, required_size *uint32, machineName string, reserved uint32) (err error) {
+func setupDiClassGuidsFromNameEx(ClassName string, guid *w32.GUID, size uint32, required_size *uint32, machineName string, reserved uint32) (err error) {
 	var _p0 *uint16
 	_p0, err = syscall.UTF16PtrFromString(ClassName)
 	if err != nil {
@@ -32,7 +34,7 @@ func setupDiClassGuidsFromNameEx(ClassName string, guid *Guid, size uint32, requ
 	return _setupDiClassGuidsFromNameEx(_p0, guid, size, required_size, _p1, reserved)
 }
 
-func _setupDiClassGuidsFromNameEx(ClassName *uint16, guid *Guid, size uint32, required_size *uint32, machineName *uint16, reserved uint32) (err error) {
+func _setupDiClassGuidsFromNameEx(ClassName *uint16, guid *w32.GUID, size uint32, required_size *uint32, machineName *uint16, reserved uint32) (err error) {
 	r1, _, e1 := syscall.Syscall6(procSetupDiClassGuidsFromNameExW.Addr(), 6, uintptr(unsafe.Pointer(ClassName)), uintptr(unsafe.Pointer(guid)), uintptr(size), uintptr(unsafe.Pointer(required_size)), uintptr(unsafe.Pointer(machineName)), uintptr(reserved))
 	if r1 == 0 {
 		if e1 != 0 {
@@ -44,7 +46,7 @@ func _setupDiClassGuidsFromNameEx(ClassName *uint16, guid *Guid, size uint32, re
 	return
 }
 
-func setupDiGetClassDevsEx(ClassGuid *Guid, Enumerator *string, hwndParent uintptr, Flags uint32, DeviceInfoSet uintptr, MachineName string, reserved uint32) (handle Handle, err error) {
+func setupDiGetClassDevsEx(ClassGuid *w32.GUID, Enumerator *string, hwndParent uintptr, Flags uint32, DeviceInfoSet uintptr, MachineName string, reserved uint32) (handle w32.HANDLE, err error) {
 	var _p0 *uint16
 	_p0, err = syscall.UTF16PtrFromString(MachineName)
 	if err != nil {
@@ -53,9 +55,9 @@ func setupDiGetClassDevsEx(ClassGuid *Guid, Enumerator *string, hwndParent uintp
 	return _setupDiGetClassDevsEx(ClassGuid, Enumerator, hwndParent, Flags, DeviceInfoSet, _p0, reserved)
 }
 
-func _setupDiGetClassDevsEx(ClassGuid *Guid, Enumerator *string, hwndParent uintptr, Flags uint32, DeviceInfoSet uintptr, MachineName *uint16, reserved uint32) (handle Handle, err error) {
+func _setupDiGetClassDevsEx(ClassGuid *w32.GUID, Enumerator *string, hwndParent uintptr, Flags uint32, DeviceInfoSet uintptr, MachineName *uint16, reserved uint32) (handle w32.HANDLE, err error) {
 	r0, _, e1 := syscall.Syscall9(procSetupDiGetClassDevsExW.Addr(), 7, uintptr(unsafe.Pointer(ClassGuid)), uintptr(unsafe.Pointer(Enumerator)), uintptr(hwndParent), uintptr(Flags), uintptr(DeviceInfoSet), uintptr(unsafe.Pointer(MachineName)), uintptr(reserved), 0, 0)
-	handle = Handle(r0)
+	handle = w32.HANDLE(r0)
 	if handle == 0 {
 		if e1 != 0 {
 			err = error(e1)
@@ -66,7 +68,7 @@ func _setupDiGetClassDevsEx(ClassGuid *Guid, Enumerator *string, hwndParent uint
 	return
 }
 
-func setupDiEnumDeviceInfo(DeviceInfoSet Handle, MemberIndex uint32, DeviceInfoData *spDeviceInformationData) (err error) {
+func setupDiEnumDeviceInfo(DeviceInfoSet w32.HANDLE, MemberIndex uint32, DeviceInfoData *spDeviceInformationData) (err error) {
 	r1, _, e1 := syscall.Syscall(procSetupDiEnumDeviceInfo.Addr(), 3, uintptr(DeviceInfoSet), uintptr(MemberIndex), uintptr(unsafe.Pointer(DeviceInfoData)))
 	if r1 == 0 {
 		if e1 != 0 {
@@ -78,7 +80,7 @@ func setupDiEnumDeviceInfo(DeviceInfoSet Handle, MemberIndex uint32, DeviceInfoD
 	return
 }
 
-func setupDiGetDeviceInstanceId(DeviceInfoSet Handle, DeviceInfoData *spDeviceInformationData, DeviceInstanceId unsafe.Pointer, DeviceInstanceIdSize uint32, RequiredSize *uint32) (err error) {
+func setupDiGetDeviceInstanceId(DeviceInfoSet w32.HANDLE, DeviceInfoData *spDeviceInformationData, DeviceInstanceId unsafe.Pointer, DeviceInstanceIdSize uint32, RequiredSize *uint32) (err error) {
 	r1, _, e1 := syscall.Syscall6(procSetupDiGetDeviceInstanceIdW.Addr(), 5, uintptr(DeviceInfoSet), uintptr(unsafe.Pointer(DeviceInfoData)), uintptr(DeviceInstanceId), uintptr(DeviceInstanceIdSize), uintptr(unsafe.Pointer(RequiredSize)), 0)
 	if r1 == 0 {
 		if e1 != 0 {
